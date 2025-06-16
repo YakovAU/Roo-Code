@@ -177,6 +177,19 @@ export class DiffViewProvider {
 		}
 	}
 
+	async replaceContent(newContent: string) {
+		if (!this.relPath || !this.activeDiffEditor) {
+			throw new Error("Diff view not open.")
+		}
+		this.newContent = newContent
+		const document = this.activeDiffEditor.document
+		const edit = new vscode.WorkspaceEdit()
+		edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), this.stripAllBOMs(newContent))
+		await vscode.workspace.applyEdit(edit)
+		if (this.fadedOverlayController) this.fadedOverlayController.clear()
+		if (this.activeLineController) this.activeLineController.clear()
+	}
+
 	async saveChanges(): Promise<{
 		newProblemsMessage: string | undefined
 		userEdits: string | undefined
